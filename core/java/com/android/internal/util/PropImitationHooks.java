@@ -67,6 +67,7 @@ public class PropImitationHooks {
             "persist.sys.pihooks.disable.gms_key_attestation_block", false);
     private static final String DATA_FILE = "gms_certified_props.json";
 
+    private static final String PACKAGE_AIWALLPAPERS = "com.google.android.apps.aiwallpapers";
     private static final String PACKAGE_FINSKY = "com.android.vending";
     private static final String PACKAGE_GMS = "com.google.android.gms";
     private static final String PROCESS_GMS_UNSTABLE = PACKAGE_GMS + ".unstable";
@@ -86,6 +87,17 @@ public class PropImitationHooks {
         "BRAND", "google",
         "MODEL", "Pixel",
         "FINGERPRINT", "google/sailfish/sailfish:10/QP1A.191005.007.A3/5972272:user/release-keys"
+    );
+
+    private static final Map<String, String> sPixelTenProps = Map.of(
+        "PRODUCT", "mustang",
+        "DEVICE", "mustang",
+        "HARDWARE", "mustang",
+        "MANUFACTURER", "Google",
+        "BRAND", "google",
+        "MODEL", "Pixel 10 Pro XL",
+        "ID", "BP4A.260205.001",
+        "FINGERPRINT", "google/mustang/mustang:16/BP4A.260205.001/14624666:user/release-keys"
     );
 
     private static final Set<String> sPixelFeatures = Set.of(
@@ -158,6 +170,9 @@ public class PropImitationHooks {
         } else if (!sNetflixModel.isEmpty() && packageName.equals(PACKAGE_NETFLIX)) {
             dlog("Setting model to " + sNetflixModel + " for Netflix");
             setPropValue("MODEL", sNetflixModel);
+        } else if (packageName.equals(PACKAGE_AIWALLPAPERS)) {
+            dlog("Spoofing Pixel 10 Pro XL for AI Wallpapers");
+            sPixelTenProps.forEach(PropImitationHooks::setPropValue);
         }
     }
 
