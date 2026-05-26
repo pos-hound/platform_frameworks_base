@@ -41,6 +41,7 @@ import java.util.Map;
 @TestApi
 public class AmbientDisplayConfiguration {
     private static final String TAG = "AmbientDisplayConfig";
+    private static final int DEFAULT_DOZE_PEEK_DURATION_SECONDS = 5;
     private final Context mContext;
     private final boolean mAlwaysOnByDefault;
     private final boolean mPickupGestureEnabledByDefault;
@@ -53,6 +54,8 @@ public class AmbientDisplayConfiguration {
     private static final String[] DOZE_SETTINGS = {
             Settings.Secure.DOZE_ENABLED,
             Settings.Secure.DOZE_ALWAYS_ON,
+            Settings.Secure.DOZE_PEEK,
+            Settings.Secure.DOZE_PEEK_DURATION,
             Settings.Secure.DOZE_PICK_UP_GESTURE,
             Settings.Secure.DOZE_PULSE_ON_LONG_PRESS,
             Settings.Secure.DOZE_DOUBLE_TAP_GESTURE,
@@ -94,7 +97,7 @@ public class AmbientDisplayConfiguration {
     public boolean enabled(int user) {
         return pulseOnNotificationEnabled(user)
                 || pulseOnLongPressEnabled(user)
-                || alwaysOnEnabled(user)
+                || screenOffAodEnabled(user)
                 || wakeLockScreenGestureEnabled(user)
                 || wakeDisplayGestureEnabled(user)
                 || pickupGestureEnabled(user)
@@ -269,6 +272,40 @@ public class AmbientDisplayConfiguration {
     public boolean alwaysOnEnabled(int user) {
         return boolSetting(Settings.Secure.DOZE_ALWAYS_ON, user, mAlwaysOnByDefault ? 1 : 0)
                 && alwaysOnAvailable() && !accessibilityInversionEnabled(user);
+    }
+
+    /** @hide */
+    public boolean screenOffAodEnabled(int user) {
+        return alwaysOnEnabled(user) || screenOffPeekEnabled(user);
+    }
+
+    /** @hide */
+    public boolean screenOffPeekEnabled(int user) {
+        return boolSettingDefaultOff(Settings.Secure.DOZE_PEEK, user)
+                && ambientDisplayAvailable()
+                && !alwaysOnEnabled(user)
+                && !accessibilityInversionEnabled(user);
+    }
+
+    /** @hide */
+    public long getScreenOffPeekDurationMillis(int user) {
+        return getScreenOffPeekDurationSeconds(user) * 1000L;
+    }
+
+    private int getScreenOffPeekDurationSeconds(int user) {
+        final int configuredDuration = Settings.Secure.getIntForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.DOZE_PEEK_DURATION,
+                DEFAULT_DOZE_PEEK_DURATION_SECONDS,
+                user);
+        switch (configuredDuration) {
+            case 7:
+            case 10:
+                return configuredDuration;
+            case DEFAULT_DOZE_PEEK_DURATION_SECONDS:
+            default:
+                return DEFAULT_DOZE_PEEK_DURATION_SECONDS;
+        }
     }
 
     /**
