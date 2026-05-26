@@ -876,7 +876,11 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             row.header.setFilters(new InputFilter[] {new InputFilter.LengthFilter(13)});
         }
         row.slider = row.view.findViewById(R.id.volume_row_slider);
-        addSliderHapticsToRow(row);
+        if (Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.VOLUME_SLIDER_HAPTIC, 0,
+                ActivityManager.getCurrentUser()) == 1) {
+            addSliderHapticsToRow(row);
+        }
         row.slider.setOnSeekBarChangeListener(new VolumeSeekBarChangeListener(row));
         row.number = row.view.findViewById(R.id.volume_number);
         row.slider.setAccessibilityDelegate(

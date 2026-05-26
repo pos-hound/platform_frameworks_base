@@ -6179,6 +6179,10 @@ public final class Settings {
         @Readable
         public static final String HAPTIC_FEEDBACK_ENABLED = "haptic_feedback_enabled";
 
+        /** @hide */
+        @Readable
+        public static final String VOLUME_SLIDER_HAPTIC = "volume_slider_haptic";
+
         /**
          * @deprecated Each application that shows web suggestions should have its own
          * setting for this.
