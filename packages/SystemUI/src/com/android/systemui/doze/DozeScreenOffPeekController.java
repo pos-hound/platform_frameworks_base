@@ -20,7 +20,6 @@ import android.app.AlarmManager;
 import android.content.Context;
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.os.Handler;
-import android.pocket.PocketManager;
 import android.provider.Settings;
 
 import com.android.systemui.dagger.qualifiers.Main;
@@ -44,7 +43,6 @@ public class DozeScreenOffPeekController implements DozeMachine.Part {
     private final AmbientDisplayConfiguration mConfig;
     private final UserTracker mUserTracker;
     private final AlarmTimeout mPeekTimeout;
-    private final PocketManager mPocketManager;
     private final DozeParameters mDozeParameters;
 
     private DozeMachine mMachine;
@@ -62,7 +60,6 @@ public class DozeScreenOffPeekController implements DozeMachine.Part {
         mUserTracker = userTracker;
         mDozeParameters = dozeParameters;
         mPeekTimeout = new AlarmTimeout(alarmManager, this::onTimeout, TAG, handler);
-        mPocketManager = (PocketManager) context.getSystemService(Context.POCKET_SERVICE);
     }
 
     @Override
@@ -76,10 +73,6 @@ public class DozeScreenOffPeekController implements DozeMachine.Part {
         mDozeParameters.setScreenOffPeekActive(peekActive);
 
         if (peekActive) {
-            if (shouldSkipForPocket()) {
-                mMachine.requestState(DozeMachine.State.DOZE);
-                return;
-            }
             mPeekTimeout.schedule(getPeekDurationMillis(),
                     AlarmTimeout.MODE_RESCHEDULE_IF_SCHEDULED);
             return;
@@ -96,13 +89,6 @@ public class DozeScreenOffPeekController implements DozeMachine.Part {
 
     private boolean shouldRunPeek() {
         return mConfig.screenOffPeekEnabled(mUserTracker.getUserId());
-    }
-
-    private boolean shouldSkipForPocket() {
-        final int userId = mUserTracker.getUserId();
-        final boolean pocketJudgeEnabled = Settings.System.getIntForUser(
-                mContext.getContentResolver(), Settings.System.POCKET_JUDGE, 0, userId) == 1;
-        return pocketJudgeEnabled && mPocketManager != null && mPocketManager.isDeviceInPocket();
     }
 
     private long getPeekDurationMillis() {
